@@ -24,18 +24,17 @@ if not DATABASE_URL:
 # กำจัดเครื่องหมายคำพูดรอบนอก (ถ้ามี)
 DATABASE_URL = DATABASE_URL.strip("\"'")
 
-# กำจัดคำนำหน้ากรณีเผลอก๊อบปี้ชื่อตัวแปรหรือคำสั่ง psql มาด้วย
-if DATABASE_URL.startswith("DATABASE_URL="):
-    DATABASE_URL = DATABASE_URL.replace("DATABASE_URL=", "", 1).strip().strip("\"'")
-if DATABASE_URL.startswith("psql "):
-    DATABASE_URL = DATABASE_URL.replace("psql ", "", 1).strip().strip("\"'")
-
-# ปรับ dialect ให้ SQLAlchemy รองรับ
+# ปรับ dialect ให้รองรับและระบุ driver ชัดเจน
 if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+elif DATABASE_URL.startswith("postgresql+psycopg://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql+psycopg://", "postgresql+psycopg2://", 1)
 
 # ตัด channel_binding ออก
 DATABASE_URL = DATABASE_URL.replace("&channel_binding=require", "")
+
 
 
 # ==============================================================================
