@@ -14,18 +14,28 @@ FILE_PATH = os.path.join("data", "listings.csv")
 QUARANTINE_DIR = "null_data"
 QUARANTINE_FILE = os.path.join(QUARANTINE_DIR, "price_null_or_zero.csv")
 
-# 2. ดึง Database URL จาก GitHub Secrets (ผ่าน Environment Variable)
-DATABASE_URL = os.getenv("DATABASE_URL")
 
-# ตรวจสอบว่าดึงค่ามาได้จริงหรือไม่
+# 2. ดึง Database URL จาก Environment Variable
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+
 if not DATABASE_URL:
     raise ValueError("❌ ไม่พบ DATABASE_URL")
 
-# ปรับแก้ Dialect ให้เข้ากันได้กับ SQLAlchemy 
+# กำจัดเครื่องหมายคำพูดรอบนอก (ถ้ามี)
+DATABASE_URL = DATABASE_URL.strip("\"'")
+
+# กำจัดคำนำหน้ากรณีเผลอก๊อบปี้ชื่อตัวแปรหรือคำสั่ง psql มาด้วย
+if DATABASE_URL.startswith("DATABASE_URL="):
+    DATABASE_URL = DATABASE_URL.replace("DATABASE_URL=", "", 1).strip().strip("\"'")
+if DATABASE_URL.startswith("psql "):
+    DATABASE_URL = DATABASE_URL.replace("psql ", "", 1).strip().strip("\"'")
+
+# ปรับ dialect ให้ SQLAlchemy รองรับ
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-if "&channel_binding=require" in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.replace("&channel_binding=require", "")
+
+# ตัด channel_binding ออก
+DATABASE_URL = DATABASE_URL.replace("&channel_binding=require", "")
 
 
 # ==============================================================================
