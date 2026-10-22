@@ -15,25 +15,28 @@ QUARANTINE_DIR = "null_data"
 QUARANTINE_FILE = os.path.join(QUARANTINE_DIR, "price_null_or_zero.csv")
 
 
-# 2. ดึง Database URL จาก Environment Variable
-DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+# 2. ดึง Database URL จาก GitHub Secrets (ผ่าน Environment Variable)
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip().strip("\"'")
 
 if not DATABASE_URL:
-    raise ValueError("❌ ไม่พบ DATABASE_URL")
+    raise ValueError("❌ ไม่พบ DATABASE_URL กรุณาตรวจสอบการตั้งค่า Secret หรือ Environment Variable")
 
-# กำจัดเครื่องหมายคำพูดรอบนอก (ถ้ามี)
-DATABASE_URL = DATABASE_URL.strip("\"'")
+# ล้างคำนำหน้ากรณีติดคำสั่งอื่นมา
+for prefix in ["DATABASE_URL=", "psql "]:
+    if DATABASE_URL.startswith(prefix):
+        DATABASE_URL = DATABASE_URL[len(prefix):].strip().strip("\"'")
 
-# ปรับ dialect ให้รองรับและระบุ driver ชัดเจน
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+# บังคับแปลง Dialect ให้ชี้ไปที่ psycopg2 ชัดเจน
+if DATABASE_URL.startswith("postgresql+psycopg://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql+psycopg://", "postgresql+psycopg2://", 1)
 elif DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
-elif DATABASE_URL.startswith("postgresql+psycopg://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql+psycopg://", "postgresql+psycopg2://", 1)
+elif DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
 
 # ตัด channel_binding ออก
 DATABASE_URL = DATABASE_URL.replace("&channel_binding=require", "")
+
 
 
 
