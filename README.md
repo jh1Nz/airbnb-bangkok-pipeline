@@ -6,7 +6,7 @@
 [![Pandas](https://img.shields.io/badge/Pandas-2.0+-150458?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
 
-ระบบ Automated Data Pipeline แบบ End-to-End สำหรับสกัด (Extract), ทำความสะอาดและแปลงรูป (Transform), และนำเข้า (Load) ข้อมูลที่พัก Airbnb ในเขตกรุงเทพมหานคร สู่ Cloud Data Warehouse (Neon Serverless PostgreSQL) ตามหลักการ **Dimensional Modeling (Star/Snowflake Schema ในรูปแบบ 3NF)** เพื่อรองรับการวิเคราะห์ Business Intelligence (BI) และตอบโจทย์การลงทุนปล่อยเช่าห้องพักอย่างมีประสิทธิภาพ
+ระบบ Automated Data Pipeline แบบ End-to-End สำหรับสกัด (Extract), ทำความสะอาดและแปลงรูป (Transform), และนำเข้า (Load) ข้อมูลที่พัก Airbnb ในเขตกรุงเทพมหานคร สู่ Cloud Data Warehouse (Neon Serverless PostgreSQL) ตามหลักการ **Dimensional Modeling (Snowflake Schema ในรูปแบบ 3NF)** เพื่อรองรับการวิเคราะห์ Business Intelligence (BI) และตอบโจทย์การลงทุนปล่อยเช่าห้องพักอย่างมีประสิทธิภาพ
 
 ---
 
@@ -70,10 +70,10 @@ flowchart LR
 
 ## 📊 การออกแบบโมเดลข้อมูล (Data Modeling)
 
-ระบบออกแบบตามสถาปัตยกรรม **Star Schema** (โดยเชื่อมต่อไปยัง Outrigger Dimension เพื่อคงคุณสมบัติ **Third Normal Form: 3NF**) เพื่อเพิ่มประสิทธิภาพในการคิวรีวิเคราะห์ข้อมูล (OLAP) ลดความซ้ำซ้อนของข้อมูล และขจัดปัญหา Transitive Dependency:
+ระบบออกแบบตามสถาปัตยกรรม **Snowflake Schema** (โดยเชื่อมต่อไปยัง Outrigger Dimension เพื่อคงคุณสมบัติ **Third Normal Form: 3NF**) เพื่อเพิ่มประสิทธิภาพในการคิวรีวิเคราะห์ข้อมูล (OLAP) ลดความซ้ำซ้อนของข้อมูล และขจัดปัญหา Transitive Dependency:
 
 <p align="center">
-  <img src="assets/data_model.png" alt="Airbnb Listings • Star Schema Data Model" width="100%">
+  <img src="assets/data_model.png" alt="Airbnb Listings • Snowflake Schema Data Model" width="100%">
 </p>
 
 ### องค์ประกอบของ Data Model
@@ -119,7 +119,7 @@ airbnb-bangkok-pipeline/
 │   └── workflows/
 │       └── etl_pipeline.yml      # CI/CD Workflow รัน ETL อัตโนมัติบน GitHub Actions
 ├── assets/
-│   └── data_model.png            # แผนภาพ Star Schema Data Model
+│   └── data_model.png            # แผนภาพ Snowflake Schema Data Model
 ├── data/
 │   └── listings.csv              # ไฟล์ข้อมูลดิบ (Landing Zone)
 ├── null_data/
