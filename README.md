@@ -3,6 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon_Serverless-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech/)
 [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-Automated_CI%2FCD-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/features/actions)
+[![Power BI](https://img.shields.io/badge/Power_BI-Dashboard-F2C811?style=for-the-badge&logo=powerbi&logoColor=black)](bi/)
 [![Pandas](https://img.shields.io/badge/Pandas-2.0+-150458?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
 
@@ -18,6 +19,7 @@
 5. [โครงสร้างโปรเจกต์ (Project Structure)](#-โครงสร้างโปรเจกต์-project-structure)
 6. [การติดตั้งและใช้งาน (Getting Started)](#-การติดตั้งและใช้งาน-getting-started)
 7. [ระบบอัตโนมัติ (CI/CD Automation with GitHub Actions)](#-ระบบอัตโนมัติ-cicd-automation-with-github-actions)
+8. [แดชบอร์ดและการแสดงผลเชิงภาพ (Business Intelligence & Analytics)](#-แดชบอร์ดและการแสดงผลเชิงภาพ-business-intelligence--analytics)
 
 ---
 
@@ -97,7 +99,7 @@ flowchart LR
 
 ---
 
-## 🛡(Data Quality & Quarantine Policy)
+## 🛡 นโยบายคุณภาพข้อมูล (Data Quality & Quarantine Policy)
 
 เพื่อรักษาความถูกต้องตามหลักการวิเคราะห์ข้อมูลและไม่บิดเบือนสถิติ จึงมีข้อกำหนดในการคลีนข้อมูลดังนี้:
 
@@ -120,6 +122,9 @@ airbnb-bangkok-pipeline/
 │       └── etl_pipeline.yml      # CI/CD Workflow รัน ETL อัตโนมัติบน GitHub Actions
 ├── assets/
 │   └── data_model.png            # แผนภาพ Snowflake Schema Data Model
+├── bi/
+│   ├── Visual Airbnb.pbix        # Power BI Report สำหรับสำรวจข้อมูลแบบ Interactive
+│   └── Visual Airbnb.pdf         # เอกสาร Dashboard ฉบับรายงานผล 4 หน้า (PDF Export)
 ├── data/
 │   └── listings.csv              # ไฟล์ข้อมูลดิบ (Landing Zone)
 ├── null_data/
@@ -218,5 +223,31 @@ python etl_pipeline.py
 
 ---
 
+## 📈 แดชบอร์ดและการแสดงผลเชิงภาพ (Business Intelligence & Analytics)
 
+เพื่อแปลงข้อมูลจาก Data Warehouse ไปสู่การตัดสินใจเชิงกลยุทธ์ทางธุรกิจสำหรับนักลงทุนและผู้ประกอบการปล่อยเช่าห้องพัก จึงได้จัดทำ Interactive Dashboard ด้วย **Microsoft Power BI** โดยเชื่อมต่อกับฐานข้อมูล Neon PostgreSQL เพื่อตอบโจทย์ธุรกิจหลักทั้ง 3 ข้ออย่างลึกซึ้ง
+
+ไฟล์ทั้งหมดได้รับการจัดเก็บไว้ในโฟลเดอร์ [`bi/`](bi/) ซึ่งประกอบด้วย:
+- 📊 **[`bi/Visual Airbnb.pbix`](bi/Visual%20Airbnb.pbix)**: ไฟล์ Power BI Desktop Report ต้นฉบับ รองรับการสำรวจข้อมูลแบบ Interactive เต็มรูปแบบ (Slicers, Drill-through, Cross-filtering)
+- 📄 **[`bi/Visual Airbnb.pdf`](bi/Visual%20Airbnb.pdf)**: เอกสารรายงานสรุปผลการวิเคราะห์ Dashboard ฉบับสมบูรณ์ (4 หน้า) สามารถเปิดอ่านได้ทันทีบนทุกอุปกรณ์โดยไม่ต้องติดตั้งโปรแกรมเพิ่มเติม
+
+---
+
+### โครงสร้างและเนื้อหาของรายงาน 4 หน้า (Dashboard Breakdown)
+
+| หน้าที่ / ชื่อรายงาน | วัตถุประสงค์เชิงธุรกิจ | ชาร์ตและตัวชี้วัดสำคัญ (Key Visuals & Metrics) |
+| :--- | :--- | :--- |
+| **Page 1: Price Drivers**<br>*(ปัจจัยตัวขับเคลื่อนราคา)* | **ตอบโจทย์ที่ 1:** ปัจจัยด้านทำเลและเงื่อนไขระยะเวลาพักต่อราคาต่อคืน | • **KPI Overview Cards**: ตัวชี้วัดภาพรวมตลาด เช่น ราคาเฉลี่ย, ราคากลาง (Median Price), และจำนวนประกาศห้องพักทั้งหมด<br>• **Bar Chart**: `Median Price (THB) by Room Type` วิเคราะห์เปรียบเทียบราคากลางตามประเภทห้องพัก<br>• **Clustered Bar Chart**: `Top 10 Neighbourhoods by Median Price (THB)` จัดอันดับ 10 ย่านที่มีราคากลางห้องพักสูงที่สุดในกรุงเทพฯ<br>• **Clustered Column Chart**: `Median Price (THB) by Minimum Nights (1-30 Days)` แนวโน้มราคากลางตามเงื่อนไขจำนวนคืนขั้นต่ำ<br>• **Interactive Slicers**: ตัวกรองเลือกย่านและช่วงราคาตามต้องการ |
+| **Page 2: Demand & Booking Friction**<br>*(แรงต้านการจองและดีมานด์)* | **ตอบโจทย์ที่ 2:** จุดยอมรับราคาของผู้เช่าและจุดต้านของคืนขั้นต่ำ | • **Line Chart**: `Booking Friction: Reviews per Month by Minimum Nights` วิเคราะห์หาจุดต้าน (Friction Point) ของจำนวนคืนขั้นต่ำที่เริ่มส่งผลให้อัตราการรีวิวเฉลี่ยต่อเดือนลดลงอย่างรวดเร็ว<br>• **Donut Chart**: `Demand Share by Room Type` สัดส่วนความต้องการของผู้เข้าพักจำแนกตามประเภทห้อง<br>• **Scatter Chart**: `Price Sweet Spot: Price vs Review LTM` ค้นหาจุดสมดุลราคาที่ผู้เข้าพักยอมรับและสร้างยอดรีวิวในรอบ 12 เดือน (Proxy ของยอดจองจริง) ได้สูงที่สุด |
+| **Page 3: Hidden Gems Finder**<br>*(ค้นหาย่านศักยภาพสูง)* | **ตอบโจทย์ที่ 3:** ย่านศักยภาพสูง กำไรคุ้มค่า คู่แข่งรายใหญ่น้อย | • **Scatter Chart**: `Hidden Gems Matrix: Supply vs Demand per Room` วางตำแหน่งย่านต่างๆ บนเมทริกซ์ 4 ควอแดรนต์ เพื่อค้นหาย่าน Blue Ocean ที่มีอุปทานห้องพักน้อยแต่มีดีมานด์สูง<br>• **Donut Chart**: `Host Distribution` สัดส่วนของผู้ให้เช่าแต่ละ Tier (Single Host, Small-Scale, Medium-Scale, Large/Agency)<br>• **Detail Table**: ตารางจัดอันดับย่านศักยภาพสูงที่มีราคาดี ดีมานด์สม่ำเสมอ และมีสัดส่วนของเอเจนซี่รายใหญ่ต่ำ เพื่อโอกาสของผู้ประกอบการรายย่อย |
+| **Page 4: Geospatial Map**<br>*(การกระจายตัวเชิงพื้นที่)* | วิเคราะห์การกระจายตัวเชิงภูมิศาสตร์และทำเลที่ตั้ง | • **Azure Map**: `Bangkok Market Density & Spatial Map` แผนที่ความหนาแน่นเชิงพื้นที่ แสดงตำแหน่งพิกัดละติจูด/ลองจิจูดของที่พักทั่ว 50 เขตในกรุงเทพมหานคร พร้อมการแสดงขนาดตามราคาและระดับความหนาแน่น ช่วยให้เห็นคลัสเตอร์ทำเลทองได้อย่างชัดเจน |
+
+---
+
+### วิธีการเปิดใช้งาน Dashboard
+1. **ดูรายงานทันทีผ่าน PDF**: เปิดไฟล์ [`bi/Visual Airbnb.pdf`](bi/Visual%20Airbnb.pdf) เพื่อดูหน้าแดชบอร์ดสรุปผลทั้ง 4 หน้า
+2. **ใช้งาน Interactive Dashboard ผ่าน Power BI Desktop**:
+   - ดาวน์โหลดและติดตั้ง [Microsoft Power BI Desktop](https://powerbi.microsoft.com/desktop/) (ฟรี)
+   - เปิดไฟล์ [`bi/Visual Airbnb.pbix`](bi/Visual%20Airbnb.pbix)
+   - หากต้องการ Refresh ข้อมูลล่าสุดจาก Cloud DW สามารถตั้งค่า Credentials เชื่อมต่อตรงไปยัง Neon PostgreSQL ตามค่าในไฟล์ `.env` ได้ทันที
 
