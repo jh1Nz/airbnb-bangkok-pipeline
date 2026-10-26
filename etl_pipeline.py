@@ -246,24 +246,24 @@ def load_data_to_neon(dim_neighbourhood, dim_room_type, dim_host_tier, dim_host,
 
     # โหลดข้อมูลตามลำดับ
     dim_neighbourhood.to_sql('dim_neighbourhood', engine, if_exists='append', index=False)
-    print(f"✅ โหลด dim_neighbourhood สำเร็จ ({len(dim_neighbourhood)} แถว)")
+    print(f" โหลด dim_neighbourhood สำเร็จ ({len(dim_neighbourhood)} แถว)")
 
     dim_room_type.to_sql('dim_room_type', engine, if_exists='append', index=False)
-    print(f"✅ โหลด dim_room_type สำเร็จ ({len(dim_room_type)} แถว)")
+    print(f" โหลด dim_room_type สำเร็จ ({len(dim_room_type)} แถว)")
 
     dim_host_tier.to_sql('dim_host_tier', engine, if_exists='append', index=False)
-    print(f"✅ โหลด dim_host_tier สำเร็จ ({len(dim_host_tier)} แถว)")
+    print(f" โหลด dim_host_tier สำเร็จ ({len(dim_host_tier)} แถว)")
 
     dim_host.to_sql('dim_host', engine, if_exists='append', index=False)
-    print(f"✅ โหลด dim_host สำเร็จ ({len(dim_host):,} แถว)")
+    print(f" โหลด dim_host สำเร็จ ({len(dim_host):,} แถว)")
 
     fact_listings.to_sql('fact_listings', engine, if_exists='append', index=False, chunksize=5000)
-    print(f"✅ โหลด fact_listings สำเร็จ ({len(fact_listings):,} แถว)")
+    print(f" โหลด fact_listings สำเร็จ ({len(fact_listings):,} แถว)")
 
     # เช็คข้อมูลปลายทาง
     with engine.connect() as conn:
         count_fact = conn.execute(text("SELECT COUNT(*) FROM fact_listings;")).scalar()
-        print(f"\n🎯 ยืนยันยอดข้อมูลจริงบน Neon DW: {count_fact:,} แถว (เป้าหมาย: 28,661 แถว)")
+        print(f"\n🎯 ยืนยันยอดข้อมูลจริงบน Neon DW: {count_fact:,} แถว")
 
 
 # ==============================================================================
