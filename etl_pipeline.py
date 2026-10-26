@@ -45,9 +45,9 @@ DATABASE_URL = DATABASE_URL.replace("&channel_binding=require", "")
 # ==============================================================================
 def extract_data() -> pd.DataFrame:
     print("==================================================================")
-    print("🚀 เริ่มต้นกระบวนการ AUTOMATED ETL PIPELINE (Airbnb Bangkok)")
+    print(" เริ่มต้นกระบวนการ AUTOMATED ETL PIPELINE (Airbnb Bangkok)")
     print("==================================================================")
-    print(f"📥 [Step 1/3: Extract] กำลังอ่านข้อมูลดิบจาก: {FILE_PATH} ...")
+    print(f" [Step 1/3: Extract] กำลังอ่านข้อมูลดิบจาก: {FILE_PATH}")
     
     if not os.path.exists(FILE_PATH):
         raise FileNotFoundError(
@@ -55,17 +55,17 @@ def extract_data() -> pd.DataFrame:
         )
     
     df_raw = pd.read_csv(FILE_PATH)
-    print(f"✅ โหลดไฟล์สำเร็จ: จำนวนข้อมูลดิบทั้งหมด {len(df_raw):,} แถว")
+    print(f" โหลดไฟล์สำเร็จ: จำนวนข้อมูลดิบทั้งหมด {len(df_raw):,} แถว")
     return df_raw
 
 
 # ==============================================================================
-# 2. TRANSFORM (คลีนข้อมูล และแปลงเป็น 3NF Snowflake Schema)
+# 2. TRANSFORM
 # ==============================================================================
 def transform_data(df_raw: pd.DataFrame):
-    print("\n🔄 [Step 2/3: Transform] กำลังทำความสะอาดข้อมูลและจัดรูป Schema...")
+    print("\n [Step 2/3: Transform]")
 
-    # 2.1 คัดเลือกเฉพาะ 14 คอลัมน์ที่จำเป็นต่อสถาปัตยกรรมข้อมูล
+    # 2.1 คัดเลือกเฉพาะ 14 คอลัมน์ที่จำเป็น
     selected_columns = [
         'id', 'price', 'minimum_nights', 'number_of_reviews_ltm',
         'reviews_per_month', 'number_of_reviews', 'availability_365',
@@ -77,14 +77,14 @@ def transform_data(df_raw: pd.DataFrame):
     # 2.2 จัดการ reviews_per_month: แทนที่ค่าว่างด้วย 0.0 (ที่พักเปิดใหม่/ยังไม่มีรีวิว)
     df_selected['reviews_per_month'] = df_selected['reviews_per_month'].fillna(0.0)
 
-    # 2.3 จัดการ price: ทำ Data Quarantine คัดแยกแถวที่ Null หรือ <= 0 ออกไปเก็บ
+    # 2.3 จัดการ price: ทำ Data Quarantine คัดแยก row ที่ Null หรือ <= 0 ออกไปเก็บ
     os.makedirs(QUARANTINE_DIR, exist_ok=True)
     null_price_mask = df_selected['price'].isnull() | (df_selected['price'] <= 0)
     null_price_keep = df_selected[null_price_mask].copy()
     
     if len(null_price_keep) > 0:
         null_price_keep.to_csv(QUARANTINE_FILE, index=False)
-        print(f"📦 Data Quarantine: แยกข้อมูลราคาไม่สมบูรณ์ {len(null_price_keep):,} แถว ไปที่: {QUARANTINE_FILE}")
+        print(f" Data Quarantine: แยกข้อมูลราคาไม่สมบูรณ์ {len(null_price_keep):,} แถว ไปที่: {QUARANTINE_FILE}")
     
     df_selected = df_selected[~null_price_mask].copy()
 
@@ -94,7 +94,7 @@ def transform_data(df_raw: pd.DataFrame):
     ].copy()
     df_selected['minimum_nights'] = df_selected['minimum_nights'].astype(int)
 
-    print(f"📊 จำนวนแถวข้อมูลสุทธิที่ผ่านเกณฑ์คุณภาพ: {len(df_selected):,} แถว")
+    print(f"จำนวนแถวข้อมูลสุทธิที่ผ่านเกณฑ์คุณภาพ: {len(df_selected):,} แถว")
 
     # --------------------------------------------------------------------------
     # สร้างตาราง Dimensions ตามโมเดล Snowflake Schema
@@ -129,7 +129,7 @@ def transform_data(df_raw: pd.DataFrame):
     )
     dim_host['host_name'] = dim_host['host_name'].fillna('Unknown Host')
 
-    # D. dim_host_tier (Outrigger Dimension - 3NF Normalization)
+    # D. dim_host_tier (3NF Normalization)
     host_tier_data = [
         {'tier_id': 1, 'tier_name': 'Single Host', 'min_listings': 1, 'max_listings': 1, 'tier_description': 'โฮสต์รายเดี่ยว ปล่อยเช่า 1 ห้องพัก (เจ้าของบ้านรายย่อย)'},
         {'tier_id': 2, 'tier_name': 'Small Scale (2-5)', 'min_listings': 2, 'max_listings': 5, 'tier_description': 'ผู้ประกอบการรายย่อย พอร์ต 2-5 ห้องพัก'},
@@ -148,12 +148,12 @@ def transform_data(df_raw: pd.DataFrame):
         else:
             return 4
 
-    # แมป tier_id เข้า dim_host เพื่อขจัด Transitive Dependency สู่ 3NF
+    # แมป tier_id เข้า dim_host 
     dim_host['tier_id'] = dim_host['calculated_host_listings_count'].apply(classify_host_tier)
     dim_host = dim_host[['host_id', 'host_name', 'calculated_host_listings_count', 'tier_id']].sort_values(by='host_id').reset_index(drop=True)
 
     # --------------------------------------------------------------------------
-    # สร้างตาราง fact_listings (ตารางข้อเท็จจริง)
+    # สร้างตาราง fact_listings 
     # --------------------------------------------------------------------------
     fact_listings = df_selected.merge(
         dim_neighbourhood[['neighbourhood_name', 'neighbourhood_id']],
@@ -224,27 +224,27 @@ def transform_data(df_raw: pd.DataFrame):
     assert set(fact_listings['host_id']).issubset(set(dim_host['host_id'])), "FK Error: host_id"
     assert fact_listings[['listing_id', 'neighbourhood_id', 'room_type_id', 'host_id', 'price']].isnull().sum().sum() == 0, "Null Column Error in Fact"
 
-    print("✅ ผ่านการตรวจสอบ Data Integrity 100% ครบทั้ง 5 ตาราง")
+    print("Data Integrity ครบทั้ง 5 ตาราง")
     return dim_neighbourhood, dim_room_type, dim_host_tier, dim_host, fact_listings
 
 
 # ==============================================================================
-# 3. LOAD (บรรจุข้อมูลขึ้นสู่ Neon Data Warehouse)
+# 3. LOAD (Neon Data Warehouse)
 # ==============================================================================
 def load_data_to_neon(dim_neighbourhood, dim_room_type, dim_host_tier, dim_host, fact_listings):
-    print("\n🚀 [Step 3/3: Load] กำลังเชื่อมต่อและโหลดข้อมูลขึ้น Neon PostgreSQL...")
+    print("\n [Step 3/3: Load] โหลดข้อมูลขึ้น Neon PostgreSQL...")
     engine = create_engine(DATABASE_URL)
 
     with engine.begin() as conn:
-        # เคลียร์ข้อมูลเดิมเพื่อรองรับ Idempotency (รันซ้ำได้โดยข้อมูลไม่เบิ้ล)
+        # เคลียร์ข้อมูลเดิมเพื่อรองรับ Idempotency (ใช้เพื่อรันซ้ำได้โดยข้อมูลไม่เบิ้ล)
         conn.execute(text("TRUNCATE TABLE fact_listings CASCADE;"))
         conn.execute(text("TRUNCATE TABLE dim_host CASCADE;"))
         conn.execute(text("TRUNCATE TABLE dim_host_tier CASCADE;"))
         conn.execute(text("TRUNCATE TABLE dim_room_type CASCADE;"))
         conn.execute(text("TRUNCATE TABLE dim_neighbourhood CASCADE;"))
-    print("🧹 เคลียร์ข้อมูลเดิมในตารางเรียบร้อย")
+    print("เคลียร์ข้อมูลเดิมในตารางเรียบร้อย")
 
-    # โหลดข้อมูลตามลำดับ DAG
+    # โหลดข้อมูลตามลำดับ
     dim_neighbourhood.to_sql('dim_neighbourhood', engine, if_exists='append', index=False)
     print(f"✅ โหลด dim_neighbourhood สำเร็จ ({len(dim_neighbourhood)} แถว)")
 
@@ -260,7 +260,7 @@ def load_data_to_neon(dim_neighbourhood, dim_room_type, dim_host_tier, dim_host,
     fact_listings.to_sql('fact_listings', engine, if_exists='append', index=False, chunksize=5000)
     print(f"✅ โหลด fact_listings สำเร็จ ({len(fact_listings):,} แถว)")
 
-    # ยืนยันยอดปลายทาง
+    # เช็คข้อมูลปลายทาง
     with engine.connect() as conn:
         count_fact = conn.execute(text("SELECT COUNT(*) FROM fact_listings;")).scalar()
         print(f"\n🎯 ยืนยันยอดข้อมูลจริงบน Neon DW: {count_fact:,} แถว (เป้าหมาย: 28,661 แถว)")
@@ -273,4 +273,4 @@ if __name__ == "__main__":
     df_raw = extract_data()
     dim_neighbourhood, dim_room_type, dim_host_tier, dim_host, fact_listings = transform_data(df_raw)
     load_data_to_neon(dim_neighbourhood, dim_room_type, dim_host_tier, dim_host, fact_listings)
-    print("\n🎉 จบกระบวนการ Automated ETL Pipeline สำเร็จสมบูรณ์ 100%!")
+    print("\n จบกระบวนการ Automated ETL Pipeline ")
