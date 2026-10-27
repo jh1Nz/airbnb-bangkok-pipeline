@@ -19,7 +19,7 @@ QUARANTINE_FILE = os.path.join(QUARANTINE_DIR, "price_null_or_zero.csv")
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip().strip("\"'")
 
 if not DATABASE_URL:
-    raise ValueError("❌ ไม่พบ DATABASE_URL กรุณาตรวจสอบการตั้งค่า Secret หรือ Environment Variable")
+    raise ValueError(" ไม่พบ DATABASE_URL กรุณาตรวจสอบการตั้งค่า Secret หรือ Environment Variable")
 
 # ล้างคำนำหน้ากรณีติดคำสั่งอื่นมา
 for prefix in ["DATABASE_URL=", "psql "]:
@@ -51,7 +51,7 @@ def extract_data() -> pd.DataFrame:
     
     if not os.path.exists(FILE_PATH):
         raise FileNotFoundError(
-            f"❌ ไม่พบไฟล์ที่ {FILE_PATH} กรุณาตรวจสอบว่ามีไฟล์ listings.csv อยู่ในโฟลเดอร์ data/ หรือไม่"
+            f" ไม่พบไฟล์ที่ {FILE_PATH} กรุณาตรวจสอบว่ามีไฟล์ listings.csv อยู่ในโฟลเดอร์ data/ หรือไม่"
         )
     
     df_raw = pd.read_csv(FILE_PATH)
@@ -263,7 +263,7 @@ def load_data_to_neon(dim_neighbourhood, dim_room_type, dim_host_tier, dim_host,
     # เช็คข้อมูลปลายทาง
     with engine.connect() as conn:
         count_fact = conn.execute(text("SELECT COUNT(*) FROM fact_listings;")).scalar()
-        print(f"\n🎯 ยืนยันยอดข้อมูลจริงบน Neon DW: {count_fact:,} แถว")
+        print(f"\n ยืนยันยอดข้อมูลจริงบน Neon DW: {count_fact:,} แถว")
 
 
 # ==============================================================================
