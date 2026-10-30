@@ -6,6 +6,7 @@
 [![Power BI](https://img.shields.io/badge/Power_BI-Dashboard-F2C811?style=for-the-badge&logo=powerbi&logoColor=black)](bi/)
 [![Pandas](https://img.shields.io/badge/Pandas-2.0+-150458?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
 ระบบ Automated Data Pipeline แบบ End-to-End สำหรับสกัด (Extract), ทำความสะอาดและแปลงรูป (Transform), และนำเข้า (Load) ข้อมูลที่พัก Airbnb ในเขตกรุงเทพมหานคร สู่ Cloud Data Warehouse (Neon Serverless PostgreSQL) ตามหลักการ **Dimensional Modeling (Snowflake Schema ในรูปแบบ 3NF)** เพื่อรองรับการวิเคราะห์ Business Intelligence (BI) และตอบโจทย์การลงทุนปล่อยเช่าห้องพักอย่างมีประสิทธิภาพ
 
@@ -92,7 +93,7 @@ flowchart LR
 | ตาราง | ชนิด | คีย์หลัก / คีย์นอก | คอลัมน์และคำอธิบาย |
 | :--- | :--- | :--- | :--- |
 | `fact_listings` | **Fact Table** | **PK:** `listing_id`<br>**FK:** `neighbourhood_id`, `room_type_id`, `host_id` | เก็บตัวชี้วัดผลการดำเนินงานของประกาศที่พัก:<br>• `price`: ราคาที่พักต่อคืน (THB)<br>• `minimum_nights`: จำนวนคืนขั้นต่ำที่รับจอง<br>• `number_of_reviews_ltm`: ยอดรีวิวในรอบ 12 เดือนล่าสุด<br>• `reviews_per_month`: อัตราการรีวิวเฉลี่ยต่อเดือน (ตัวแทนดีมานด์)<br>• `number_of_reviews`: ยอดรีวิวสะสมทั้งหมด<br>• `availability_365`: จำนวนวันที่ห้องว่างให้จองในรอบปี |
-| `dim_neighbourhood` | **Dimension** | **PK:** `neighbourhood_id` | ข้อมูลทำเลที่ตั้ง:<br>• `neighbourhood_name`: ชื่อเขต 50 เขตในกรุงเทพมหานคร |
+| `dim_neighbourhood` | **Dimension** | **PK:** `neighbourhood_id` | ข้อมูลทำเลที่ตั้ง:<br>• `neighbourhood_name`: ชื่อเขต 50 เขตในกรุงเทพมหานคร<br>• `latitude`, `longitude`: พิกัดกึ่งกลางเฉลี่ยของย่าน (สำหรับงาน Geospatial Map) |
 | `dim_room_type` | **Dimension** | **PK:** `room_type_id` | ประเภทของห้องพัก:<br>• `room_type_name`: เช่น Entire home/apt, Private room, Shared room, Hotel room |
 | `dim_host` | **Dimension** | **PK:** `host_id`<br>**FK:** `tier_id` | ข้อมูลผู้ให้เช่าที่พัก:<br>• `host_name`: ชื่อของผู้ให้เช่า<br>• `calculated_host_listings_count`: จำนวนประกาศห้องพักทั้งหมดที่ผู้ให้เช่าคนนี้บริหารอยู่ |
 | `dim_host_tier` | **Outrigger Dimension** | **PK:** `tier_id` | การจัดระดับขนาดผู้ประกอบการเพื่อตอบโจทย์วิเคราะห์การแข่งขัน:<br>• **Tier 1 (Single Host)**: 1 ห้องพัก (เจ้าของบ้านรายย่อย)<br>• **Tier 2 (Small Scale)**: 2–5 ห้องพัก (ผู้ประกอบการรายย่อย)<br>• **Tier 3 (Medium Scale)**: 6–19 ห้องพัก (ผู้ประกอบการระดับกลาง)<br>• **Tier 4 (Large/Agency)**: $\ge 20$ ห้องพัก (เอเจนซี่หรือกลุ่มทุนมืออาชีพ)<br>• ระบุเงื่อนไขด้วย `min_listings`, `max_listings` และคำอธิบาย `tier_description` |
@@ -121,7 +122,11 @@ airbnb-bangkok-pipeline/
 │   └── workflows/
 │       └── etl_pipeline.yml      # CI/CD Workflow รัน ETL อัตโนมัติบน GitHub Actions
 ├── assets/
-│   └── data_model.png            # แผนภาพ Snowflake Schema Data Model
+│   ├── dashboard_booking_friction.png # ภาพตัวอย่าง Dashboard หน้า 2 (Demand & Booking Friction)
+│   ├── dashboard_geospatial_map.png   # ภาพตัวอย่าง Dashboard หน้า 4 (Geospatial Map)
+│   ├── dashboard_hidden_gems.png      # ภาพตัวอย่าง Dashboard หน้า 3 (Hidden Gems Finder)
+│   ├── dashboard_price_drivers.png    # ภาพตัวอย่าง Dashboard หน้า 1 (Price Drivers)
+│   └── data_model.png                 # แผนภาพ Snowflake Schema Data Model
 ├── bi/
 │   ├── Visual Airbnb.pbix        # Power BI Report สำหรับสำรวจข้อมูลแบบ Interactive
 │   └── Visual Airbnb.pdf         # เอกสาร Dashboard ฉบับรายงานผล 4 หน้า (PDF Export)
@@ -135,6 +140,7 @@ airbnb-bangkok-pipeline/
 ├── listings_etl.ipynb            # Jupyter Notebook สำหรับทดลองและวิเคราะห์ข้อมูลเบื้องต้น
 ├── requirements.txt              # รายการ Library dependencies
 ├── schema.sql                    # สคริปต์ DDL สำหรับสร้าง Table และ Foreign Key Constraints
+├── LICENSE                       # สัญญาอนุญาตการใช้งานแบบเปิด (MIT License)
 └── README.md                     # เอกสารอธิบายรายละเอียดโปรเจกต์
 ```
 
@@ -148,7 +154,7 @@ airbnb-bangkok-pipeline/
 
 ### 2. โคลน Repository และสร้าง Virtual Environment
 ```bash
-git clone https://github.com/<your-username>/airbnb-bangkok-pipeline.git
+git clone https://github.com/jh1Nz/airbnb-bangkok-pipeline.git
 cd airbnb-bangkok-pipeline
 
 # สร้าง virtual environment
@@ -185,27 +191,27 @@ python etl_pipeline.py
 เมื่อกระบวนการทำงานเสร็จสมบูรณ์ จะแสดงผลลัพธ์การโหลดข้อมูลและการตรวจสอบจำนวนแถวปลายทาง:
 ```text
 ==================================================================
-🚀 เริ่มต้นกระบวนการ AUTOMATED ETL PIPELINE (Airbnb Bangkok)
+ เริ่มต้นกระบวนการ AUTOMATED ETL PIPELINE (Airbnb Bangkok)
 ==================================================================
-📥 [Step 1/3: Extract] กำลังอ่านข้อมูลดิบจาก: data/listings.csv ...
-✅ โหลดไฟล์สำเร็จ: จำนวนข้อมูลดิบทั้งหมด 30,922 แถว
+ [Step 1/3: Extract] กำลังอ่านข้อมูลดิบจาก: data/listings.csv
+ โหลดไฟล์สำเร็จ: จำนวนข้อมูลดิบทั้งหมด 30,922 แถว
 
-🔄 [Step 2/3: Transform] กำลังทำความสะอาดข้อมูลและจัดรูป Schema...
-📦 Data Quarantine: แยกข้อมูลราคาไม่สมบูรณ์ 2,259 แถว ไปที่: null_data/price_null_or_zero.csv
-📊 จำนวนแถวข้อมูลสุทธิที่ผ่านเกณฑ์คุณภาพ: 28,661 แถว
-✅ ผ่านการตรวจสอบ Data Integrity 100% ครบทั้ง 5 ตาราง
+ [Step 2/3: Transform]
+ Data Quarantine: แยกข้อมูลราคาไม่สมบูรณ์ 2,259 แถว ไปที่: null_data/price_null_or_zero.csv
+จำนวนแถวข้อมูลสุทธิที่ผ่านเกณฑ์คุณภาพ: 28,661 แถว
+Data Integrity ครบทั้ง 5 ตาราง
 
-🚀 [Step 3/3: Load] กำลังเชื่อมต่อและโหลดข้อมูลขึ้น Neon PostgreSQL...
-🧹 เคลียร์ข้อมูลเดิมในตารางเรียบร้อย
-✅ โหลด dim_neighbourhood สำเร็จ (50 แถว)
-✅ โหลด dim_room_type สำเร็จ (4 แถว)
-✅ โหลด dim_host_tier สำเร็จ (4 แถว)
-✅ โหลด dim_host สำเร็จ (11,489 แถว)
-✅ โหลด fact_listings สำเร็จ (28,661 แถว)
+ [Step 3/3: Load] โหลดข้อมูลขึ้น Neon PostgreSQL...
+เคลียร์ข้อมูลเดิมในตารางเรียบร้อย
+ โหลด dim_neighbourhood สำเร็จ (50 แถว)
+ โหลด dim_room_type สำเร็จ (4 แถว)
+ โหลด dim_host_tier สำเร็จ (4 แถว)
+ โหลด dim_host สำเร็จ (11,489 แถว)
+ โหลด fact_listings สำเร็จ (28,661 แถว)
 
-🎯 ยืนยันยอดข้อมูลจริงบน Neon DW: 28,661 แถว (เป้าหมาย: 28,661 แถว)
+ ยืนยันยอดข้อมูลจริงบน Neon DW: 28,661 แถว
 
-🎉 จบกระบวนการ Automated ETL Pipeline สำเร็จสมบูรณ์ 100%!
+ จบกระบวนการ Automated ETL Pipeline 
 ```
 
 ---
@@ -233,6 +239,74 @@ python etl_pipeline.py
 
 ---
 
+### 📸 หน้าตัวอย่างแดชบอร์ดและข้อค้นพบทางธุรกิจ (Dashboard Previews & Key Insights)
+
+#### 1. Page 1: Price Drivers (ปัจจัยตัวขับเคลื่อนราคา)
+> **ตอบโจทย์ที่ 1:** วิเคราะห์ปัจจัยด้านทำเล ประเภทห้องพัก และเงื่อนไขคืนขั้นต่ำที่ส่งผลต่อราคาต่อคืน
+
+<p align="center">
+  <img src="assets/dashboard_price_drivers.png" alt="Page 1: Price Drivers Dashboard" width="100%">
+</p>
+
+* **💡 ข้อค้นพบสำคัญ (Key Insights):**
+  - **ราคากลางแยกตามประเภทห้องพัก (Room Type):** `Hotel room` ครองราคากลางสูงสุดที่ **1,912.50 THB/คืน** ตามด้วย `Entire home/apt` ที่ **1,756 THB/คืน** ซึ่งสูงกว่า `Private room` (1,348 THB/คืน) ราว 30% และสูงกว่า `Shared room` (414 THB/คืน) ถึง 4.2 เท่า
+  - **Top 5 ย่านราคากลางสูงสุดใน กทม. (ประกาศ $\ge 50$ รายการ):**
+    1. **ปทุมวัน (Pathum Wan)**: ราคากลาง 2,581 THB/คืน (ศูนย์กลางช้อปปิ้งและ CBD)
+    2. **วัฒนา (Vadhana)**: ราคากลาง 2,250 THB/คืน (ย่านสุขุมวิท/เอกมัย/ทองหล่อ)
+    3. **สัมพันธวงศ์ (Samphanthawong)**: ราคากลาง 2,205 THB/คืน (ย่านเยาวราช/วัฒนธรรม)
+    4. **บางรัก (Bang Rak)**: ราคากลาง 1,969 THB/คืน (ย่านสีลม/สาทร)
+    5. **คลองเตย (Khlong Toei)**: ราคากลาง 1,950 THB/คืน (ย่านสุขุมวิทตอนต้น)
+  - **เงื่อนไขคืนขั้นต่ำกับราคา:** ประกาศที่พักที่กำหนดคืนขั้นต่ำระยะสั้น (1–2 คืน) มีความยืดหยุ่นในการตั้งราคากลางได้สูงกว่าและหมุนเวียนผู้เข้าพักได้เร็วกว่าที่พักที่เน้นสัญญาระยะยาว
+
+---
+
+#### 2. Page 2: Demand & Booking Friction (แรงต้านการจองและดีมานด์)
+> **ตอบโจทย์ที่ 2:** ค้นหาจุดต้านของคืนขั้นต่ำ และจุดยอมรับราคาที่สร้างยอดจองได้สูงสุด
+
+<p align="center">
+  <img src="assets/dashboard_booking_friction.png" alt="Page 2: Demand & Booking Friction Dashboard" width="100%">
+</p>
+
+* **💡 ข้อค้นพบสำคัญ (Key Insights):**
+  - **จุดต้านของคืนขั้นต่ำ (Booking Friction Threshold):**
+    - การกำหนดคืนขั้นต่ำ **1–2 คืน** ได้รับความนิยมสูงสุด โดยสร้างอัตราการรีวิวเฉลี่ยต่อเดือน (**0.90 – 1.12 รีวิว/เดือน**)
+    - เมื่อเพิ่มเงื่อนไขคืนขั้นต่ำเป็น **$\ge 3$ คืน** อัตราการรีวิวเฉลี่ยจะ**ลดลงทันทีถึง 47%** (เหลือ 0.59 รีวิว/เดือน) และหากตั้งไว้ที่ **$\ge 7$ คืน** จะลดลงเหลือเพียง **0.22 รีวิว/เดือน**
+    - *ข้อสรุปทางธุรกิจ:* **3 คืนคือ Friction Point สำคัญ** หากผู้ประกอบการตั้งขั้นต่ำเกิน 2 คืนโดยไม่มีส่วนลดจูงใจ จะเสียโอกาสทางการตลาดอย่างมีนัยสำคัญ
+  - **จุดยอมรับราคา (Price Sweet Spot):** กราฟกระจายตัว (Scatter Plot) ระหว่างราคาและยอดรีวิวสะสมในรอบ 12 เดือน (Reviews LTM) พบว่าช่วงราคา **1,200 – 2,200 THB/คืน** เป็นจุดสมดุลที่ตลาดพร้อมจ่ายและสร้างยอดจองได้หนาแน่นที่สุด
+  - **Demand Share:** ประเภทห้อง `Entire home/apt` ครองส่วนแบ่งความต้องการของผู้เข้าพักสูงสุดในตลาด (คิดเป็นกว่า **67%** ของยอดรีวิวทั้งหมด)
+
+---
+
+#### 3. Page 3: Hidden Gems Finder (ค้นหาย่านศักยภาพสูง กำไรคุ้มค่า คู่แข่งรายใหญ่น้อย)
+> **ตอบโจทย์ที่ 3:** ระบุทำเลศักยภาพสูง (Blue Ocean) และวิเคราะห์สัดส่วนผู้ประกอบการรายใหญ่
+
+<p align="center">
+  <img src="assets/dashboard_hidden_gems.png" alt="Page 3: Hidden Gems Finder Dashboard" width="100%">
+</p>
+
+* **💡 ข้อค้นพบสำคัญ (Key Insights):**
+  - **โครงสร้างการแข่งขันของผู้ให้เช่า (Host Tier Distribution):**
+    - **Large / Agency ($\ge 20$ ประกาศ):** ครองส่วนแบ่งห้องพักในตลาดถึง **37.8%** (10,846 รายการ)
+    - **Medium Scale (6–19 ประกาศ):** มีส่วนแบ่ง **26.3%** (7,543 รายการ)
+    - *ผลกระทบ:* ผู้ประกอบการมืออาชีพและกลุ่มทุนเอเจนซี่ครองตลาดรวมกันเกิน **64.1%** ทำให้ย่านใจกลางเมือง (สุขุมวิท/สาทร) มีการแข่งขันและสงครามราคารุนแรง
+    - **Single Host (ผู้เช่ารายเดี่ยว 1 ห้อง):** มีส่วนแบ่งเพียง **13.5%** ของตลาด
+  - **ย่านเพชรในตม (Hidden Gems Matrix):** จากการวิเคราะห์เมทริกซ์ Supply vs Demand ต่อห้อง พบย่านที่มีดีมานด์เฉลี่ยต่อห้องสูงสม่ำเสมอ แต่อัตราส่วนเอเจนซี่รายใหญ่ยังไม่ครอบงำ เช่น ย่านเชื่อมต่อรถไฟฟ้าสายใหม่และย่านรอบนอก CBD (เช่น **พญาไท, ธนบุรี, บางซื่อ**) ถือเป็นโอกาสทองสำหรับนักลงทุนรายย่อยที่จะเริ่มธุรกิจ
+
+---
+
+#### 4. Page 4: Geospatial Map (การกระจายตัวเชิงพื้นที่)
+> วิเคราะห์ทำเลทองและความหนาแน่นเชิงภูมิศาสตร์ 50 เขตทั่วกรุงเทพฯ
+
+<p align="center">
+  <img src="assets/dashboard_geospatial_map.png" alt="Page 4: Geospatial Map Dashboard" width="100%">
+</p>
+
+* **💡 ข้อค้นพบสำคัญ (Key Insights):**
+  - **การกระจุกตัวของตลาด (Market Density):** ประกาศห้องพักกระจุกตัวหนาแน่นเป็นแกนยาวตามเส้นทางรถไฟฟ้า BTS/MRT โดยเฉพาะแนวถนนสุขุมวิท (เขตวัฒนา, คลองเตย), ย่านธุรกิจสีลม-สาทร (เขตบางรัก) และโซนเศรษฐกิจใหม่รัชดา-พระราม 9 (เขตห้วยขวาง)
+  - **การวางแผนกลยุทธ์ที่ตั้ง:** ช่วยให้นักลงทุนสามารถประเมินตำแหน่งที่ตั้งเพื่อหลีกเลี่ยงสภาวะอุปทานล้นตลาด (Oversupply) ภายในรัศมีเดียวกัน และมองเห็นช่องว่างทำเลที่การเดินทางสะดวกแต่ยังมีคู่แข่งหนาแน่นน้อย
+
+---
+
 ### โครงสร้างและเนื้อหาของรายงาน 4 หน้า (Dashboard Breakdown)
 
 | หน้าที่ / ชื่อรายงาน | วัตถุประสงค์เชิงธุรกิจ | ชาร์ตและตัวชี้วัดสำคัญ (Key Visuals & Metrics) |
@@ -250,4 +324,12 @@ python etl_pipeline.py
    - ดาวน์โหลดและติดตั้ง [Microsoft Power BI Desktop](https://powerbi.microsoft.com/desktop/) (ฟรี)
    - เปิดไฟล์ [`bi/Visual Airbnb.pbix`](bi/Visual%20Airbnb.pbix)
    - หากต้องการ Refresh ข้อมูลล่าสุดจาก Cloud DW สามารถตั้งค่า Credentials เชื่อมต่อตรงไปยัง Neon PostgreSQL ตามค่าในไฟล์ `.env` ได้ทันที
+
+---
+
+## 👨‍💻 ผู้พัฒนาและสัญญาอนุญาต (Author & License)
+- **ผู้พัฒนา**: [jh1Nz](https://github.com/jh1Nz)
+- **แหล่งข้อมูล**: ข้อมูลสาธารณะเปิดเผยจาก [Inside Airbnb](http://insideairbnb.com/)
+- **สัญญาอนุญาต**: เผยแพร่ภายใต้สัญญาอนุญาต [MIT License](LICENSE) สามารถนำไปศึกษา ดัดแปลง และต่อยอดได้อย่างเสรี
+
 

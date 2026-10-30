@@ -1,12 +1,17 @@
 # ไม่นำไฟล์รหัสผ่านจริงขึ้น GitHub
 .env
+.env.*
+!.env.example
 
 # ไม่นำข้อมูล Rejected / Quarantine ขึ้น Git
 null_data/
 listings_etl.ipynb
+
+# ไฟล์เอกสารสไลด์/ไฟล์ชั่วคราว
+index.html
+
 # ไฟล์ระบบของ macOS และ Python Cache
 .DS_Store
 __pycache__/
 *.pyc
 .venv/
-index.html
